@@ -6,26 +6,35 @@
 local M = {}
 
 M.base46 = {
-	theme = "gruvbox",
-	theme_toggle = { "gruvbox", "gruvchad" },
-	transparency = true,
+  theme = "gruvbox",
+  theme_toggle = { "gruvbox", "gruvchad" },
+  transparency = true,
 
-	hl_override = {
-		Comment = { italic = true },
-		["@comment"] = { italic = true },
-		FloatBorder = { fg = "grey_fg" },
-		-- FloatBorder = { fg = "blue" }
-	},
+  hl_override = {
+    Comment = { italic = true },
+    ["@comment"] = { italic = true },
+    FloatBorder = { fg = "grey_fg" },
+  },
 }
 
--- M.nvdash = { load_on_startup = true }
 M.ui = {
-	tabufline = {
-		lazyload = false,
-	},
-	statusline = {
-		separator_style = "block",
-	},
+  tabufline = {
+    lazyload = false,
+  },
+  statusline = {
+    separator_style = "block",
+  },
+}
+
+M.term = {
+  float = {
+    relative = "editor",
+    row = 0.13,
+    col = 0.15,
+    width = 0.7,
+    height = 0.6,
+    border = "single",
+  },
 }
 
 return M

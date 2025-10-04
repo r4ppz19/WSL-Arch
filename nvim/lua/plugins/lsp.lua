@@ -1,151 +1,161 @@
 return {
-	"neovim/nvim-lspconfig",
-	dependencies = {
-		"mason-org/mason-lspconfig.nvim",
-		"mason-org/mason.nvim",
-		"hrsh7th/cmp-nvim-lsp",
-		"nvim-telescope/telescope.nvim",
-		"jinzhongjia/LspUI.nvim",
-	},
+  "neovim/nvim-lspconfig",
+  dependencies = {
+    {
+      "mason-org/mason.nvim",
+      opts = {
+        registries = {
+          "github:mason-org/mason-registry",
+          "github:nvim-java/mason-registry",
+        },
+      },
+      dependencies = "nvim-telescope/telescope.nvim",
+    },
+    {
+      "mason-org/mason-lspconfig.nvim",
+      opts = {
+        ensure_installed = {
+          "html",
+          "cssls",
+          "cssmodules_ls",
+          "css_variables",
+          "eslint",
+          "vtsls",
+          "jsonls",
+          "marksman",
+          "lua_ls",
+          "pyright",
+          "bashls",
+          "rust_analyzer",
+          "emmet_ls",
+          "jdtls",
+        },
+        automatic_enable = false,
+      },
+    },
+    "hrsh7th/cmp-nvim-lsp",
+    "nvimdev/lspsaga.nvim",
+    "mfussenegger/nvim-jdtls",
+  },
 
-	config = function()
-		require("configs.lspui").setup()
+  config = function()
+    local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-		require("mason").setup({
-			ui = {
-				border = "single",
-				width = 0.8,
-				height = 0.8,
-				icons = {
-					package_installed = "✓",
-					package_pending = "➜",
-					package_uninstalled = "✗",
-				},
-			},
-		})
+    vim.lsp.config("*", {
+      capabilities = capabilities,
+      root_markers = { ".git", ".hg", "package.json", "vite.config.js", "vite.config.ts", "tsconfig.json" },
+    })
 
-		require("mason-lspconfig").setup({
-			ensure_installed = {
-				"lua_ls",
-				"pyright",
-				"bashls",
-				"html",
-				"cssls",
-				"rust_analyzer",
-				"tailwindcss",
-				"ts_ls",
-				"systemd_ls",
-			},
-			automatic_installation = true,
-		})
+    vim.lsp.config("lua_ls", {
+      capabilities = capabilities,
+      settings = {
+        Lua = {
+          runtime = {
+            version = "LuaJIT",
+          },
+          diagnostics = {
+            globals = { "vim" },
+          },
+          workspace = {
+            library = {
+              -- Neovim runtime
+              [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+              [vim.env.VIMRUNTIME] = true,
+              [vim.fn.stdpath "config"] = true,
+              [vim.fn.stdpath "data" .. "/lazy/ui/nvchad_types"] = true,
+              [vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy"] = true,
+              ["${3rd}/luv/library"] = true,
+            },
+            checkThirdParty = false,
+            maxPreload = 2000,
+            preloadFileSize = 1000,
+          },
+          telemetry = {
+            enable = false,
+          },
+        },
+      },
+    })
 
-		local lspconfig = require("lspconfig")
-		local capabilities = require("cmp_nvim_lsp").default_capabilities()
+    vim.lsp.config("vtsls", {
+      capabilities = capabilities,
+      settings = {
+        typescript = {
+          inlayHints = {
+            includeInlayParameterNameHints = "all",
+            includeInlayTypeParameterHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayVariableTypeHints = true,
+            includeInlayPropertyDeclarationTypeHints = true,
+          },
+          preferences = {
+            importModuleSpecifier = "relative",
+          },
+        },
+        javascript = {
+          inlayHints = {
+            includeInlayParameterNameHints = "all",
+            includeInlayTypeParameterHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayVariableTypeHints = true,
+            includeInlayPropertyDeclarationTypeHints = true,
+          },
+          preferences = {
+            importModuleSpecifier = "relative",
+          },
+        },
+      },
+    })
 
-		local function on_attach(_, bufnr)
-			local map = vim.keymap.set
+    vim.lsp.config("cssmodules_ls", {
+      capabilities = capabilities,
+      filetypes = { "typescriptreact", "javascriptreact", "tsx", "jsx" },
+    })
 
-			-- Use LspUI commands instead of default LSP functions
-			map("n", "K", "<cmd>LspUI hover<CR>", { buffer = bufnr, desc = "Hover Doc" })
-			map("n", "gd", "<cmd>LspUI definition<CR>", { buffer = bufnr, desc = "Goto Definition" })
-			map("n", "gi", "<cmd>LspUI implementation<CR>", { buffer = bufnr, desc = "Goto Implementation" })
-			map("n", "gt", "<cmd>LspUI type_definition<CR>", { buffer = bufnr, desc = "Goto Type Definition" })
-			map("n", "<leader>lr", "<cmd>LspUI reference<CR>", { buffer = bufnr, desc = "LSP References" })
-			map("n", "<leader>la", "<cmd>LspUI code_action<CR>", { buffer = bufnr, desc = "Code Action" })
-			map("n", "<leader>lI", "<cmd>LspUI inlay_hint<CR>", { buffer = bufnr, desc = "Toggle Inlay Hints" })
-			map(
-				"n",
-				"<leader>lci",
-				"<cmd>LspUI call_hierarchy incoming_calls<CR>",
-				{ buffer = bufnr, desc = "Incoming Calls" }
-			)
-			map(
-				"n",
-				"<leader>lco",
-				"<cmd>LspUI call_hierarchy outgoing_calls<CR>",
-				{ buffer = bufnr, desc = "Outgoing Calls" }
-			)
+    vim.lsp.config("cssls", {
+      capabilities = capabilities,
+      settings = {
+        css = { validate = true, lint = { cssConflict = "warning" } },
+        scss = { validate = true, lint = { cssConflict = "warning" } },
+        less = { validate = true, lint = { cssConflict = "warning" } },
+      },
+    })
 
-			-- Default LSP functions
-			map("n", "<leader>lh", vim.lsp.buf.signature_help, { buffer = bufnr, desc = "Signature Help" })
-			map("i", "<C-k>", vim.lsp.buf.signature_help, { buffer = bufnr, desc = "Signature Help" })
-			map("n", "<leader>ln", vim.lsp.buf.rename, { buffer = bufnr, desc = "Rename Symbol" })
-			map("n", "<leader>lq", vim.diagnostic.setloclist, { desc = "Diagnostics: Set Loclist" })
-			map("n", "]d", vim.diagnostic.goto_next, { buffer = bufnr, desc = "Next Diagnostic" })
-			map("n", "[d", vim.diagnostic.goto_prev, { buffer = bufnr, desc = "Prev Diagnostic" })
+    vim.lsp.config("emmet_ls", {
+      capabilities = capabilities,
+      filetypes = { "html", "javascriptreact", "typescriptreact", "css", "scss" },
+    })
 
-			-- Telescope for symbols and diagnostics
-			local tb = require("telescope.builtin")
-			map("n", "<leader>ls", tb.lsp_document_symbols, { buffer = bufnr, desc = "LSP Document Symbols" })
-			map("n", "<leader>lS", tb.lsp_workspace_symbols, { buffer = bufnr, desc = "LSP Workspace Symbols" })
-			map("n", "<leader>ld", tb.diagnostics, { buffer = bufnr, desc = "Diagnostics" })
-		end
+    vim.lsp.config("eslint", {
+      capabilities = capabilities,
+      settings = {
+        format = false,
+        codeActionOnSave = {
+          enable = true,
+          mode = "all",
+        },
+      },
+    })
 
-		-- LSP server configurations
-		lspconfig.lua_ls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
+    local servers = {
+      "html",
+      "cssls",
+      "cssmodules_ls",
+      "css_variables",
+      "eslint",
+      "jsonls",
+      "vtsls",
+      "marksman",
+      "lua_ls",
+      "pyright",
+      "bashls",
+      "rust_analyzer",
+      "emmet_ls",
+      "jdtls",
+    }
 
-		lspconfig.pyright.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.ts_ls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.bashls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.html.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.cssls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.rust_analyzer.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-			settings = {
-				["rust-analyzer"] = {
-					inlayHints = {
-						bindingModeHints = false,
-						typeHints = false,
-						parameterHints = false,
-						chainingHints = false,
-					},
-					cargo = { allFeatures = true },
-					check = { command = "clippy" },
-				},
-			},
-		})
-
-		lspconfig.tailwindcss.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		lspconfig.systemd_ls.setup({
-			on_attach = on_attach,
-			capabilities = capabilities,
-		})
-
-		require("lspconfig").cssmodules_ls.setup({
-			on_attach = function(client)
-				client.server_capabilities.definitionProvider = false
-			end,
-			init_options = {
-				camelCase = "dashes",
-			},
-		})
-	end,
+    for _, s in ipairs(servers) do
+      vim.lsp.enable(s)
+    end
+  end,
 }

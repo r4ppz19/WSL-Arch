@@ -1,23 +1,25 @@
 return {
-	"kdheepak/lazygit.nvim",
-	lazy = true,
-	dependencies = { "nvim-lua/plenary.nvim" },
+  "kdheepak/lazygit.nvim",
+  lazy = false,
+  dependencies = {
+    "nvim-telescope/telescope.nvim",
+    "nvim-lua/plenary.nvim",
+  },
 
-	cmd = {
-		"LazyGit",
-		"LazyGitConfig",
-		"LazyGitCurrentFile",
-		"LazyGitFilter",
-		"LazyGitFilterCurrentFile",
-	},
+  cmd = {
+    "LazyGit",
+    "LazyGitConfig",
+    "LazyGitCurrentFile",
+    "LazyGitFilter",
+    "LazyGitFilterCurrentFile",
+  },
 
-	keys = {
-		{ "<leader>gg", "<cmd>LazyGit<cr>", desc = "Open LazyGit" },
-	},
+  config = function()
+    require("telescope").load_extension "lazygit"
+    vim.g.lazygit_floating_window_scaling_factor = 1
+  end,
 
-	config = function()
-		vim.g.lazygit_floating_window_winblend = 0
-		vim.g.lazygit_floating_window_scaling_factor = 9
-		vim.g.lazygit_floating_window_border_chars = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
-	end,
+  keys = {
+    { "<leader>gg", "<cmd>LazyGit<cr>", desc = "Open LazyGit" },
+  },
 }

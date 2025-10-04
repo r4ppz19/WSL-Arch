@@ -1,25 +1,69 @@
 local map = function(mode, lhs, rhs, opts)
-	opts = opts or {}
-	opts.noremap = opts.noremap ~= false
-	vim.keymap.set(mode, lhs, rhs, opts)
+  opts = opts or {}
+  opts.noremap = opts.noremap ~= false
+  vim.keymap.set(mode, lhs, rhs, opts)
 end
 
 -- Editor remaps/ built in
+-- I use arrow keys not hjkl cause I am a fucking weirdo
+
+map({ "n", "v" }, "Up", "k", { desc = "Move up" })
+map({ "n", "v" }, "Down", "j", { desc = "Move down" })
+map({ "n", "v" }, "Left", "h", { desc = "Move left" })
+map({ "n", "v" }, "Right", "l", { desc = "Move right" })
+map("i", "Up", "<C-o>k", { desc = "Move up" })
+map("i", "Down", "<C-o>j", { desc = "Move down" })
+map("i", "Left", "<C-o>h", { desc = "Move left" })
+map("i", "Right", "<C-o>l", { desc = "Move right" })
+
+map("n", "!", "%", { desc = "Jump to matching pair" })
+
+map("n", "1", "^", { desc = "Jump to first non-blank character of the line" })
+map("n", "2", "$", { desc = "Jump to end of line" })
+
+map("v", "gx", function()
+  vim.cmd [[normal! "vy]]
+  local url = vim.fn.getreg '"'
+  url = vim.fn.trim(url)
+  if url ~= "" then
+    vim.fn.jobstart({ "xdg-open", url }, { detach = true })
+  else
+    vim.notify("No URL selected", vim.log.levels.WARN)
+  end
+end, { silent = true, desc = "Open selected text as URL" })
+
+map("n", "q", "<Nop>")
+
 map("n", "*", [[<Cmd>let @/ = '\<'.expand('<cword>').'\>'<CR>:set hlsearch<CR>]], { desc = "Highlight word (no jump)" })
 map("n", "#", [[<Cmd>let @/ = '\<'.expand('<cword>').'\>'<CR>:set hlsearch<CR>]], { desc = "Highlight word (no jump)" })
+map(
+  "v",
+  "*",
+  [[y:let @/ = '\V'.escape(@", '/\').'\>'<CR>:set hlsearch<CR>]],
+  { desc = "Highlight selection (no jump)" }
+)
+map(
+  "v",
+  "#",
+  [[y:let @/ = '\V'.escape(@", '/\').'\>'<CR>:set hlsearch<CR>]],
+  { desc = "Highlight selection (no jump)" }
+)
 
 map("i", "<C-h>", "<C-w>", { desc = "Make Ctrl+Backspace act as ctrl+w in insert mode" })
 
 map({ "n", "v" }, "<C-Left>", "b", { desc = "Move to the beginning of the word" })
 map({ "n", "v" }, "<C-Right>", "e", { desc = "Move to the end of the word" })
-
 map("i", "<C-Left>", "<C-o>b", { desc = "Move to the beginning of the word in insert mode" })
 map("i", "<C-Right>", "<C-o>e", { desc = "Move to the end of the word in insert mode" })
-
-map({ "n", "v" }, "<S-Up>", "<C-u>", { desc = "Scroll half a page up" })
-map({ "n", "v" }, "<S-Down>", "<C-d>", { desc = "Scroll half a page down" })
-map("i", "<S-Up>", "<C-o><C-u>", { desc = "Scroll half a page up in insert mode" })
-map("i", "<S-Down>", "<C-o><C-d>", { desc = "Scroll half a page down in insert mode" })
+--
+map({ "n", "v" }, "<S-Up>", "{zz", { desc = "Jump to previous paragraph (centered)" })
+map({ "n", "v" }, "<S-Down>", "}zz", { desc = "Jump to next paragraph (centered)" })
+map("i", "<S-Up>", "<C-o>{zz", { desc = "Jump to previous paragraph (centered) in insert mode" })
+map("i", "<S-Down>", "<C-o>}zz", { desc = "Jump to next paragraph (centered) in insert mode" })
+-- map({ "n", "v" }, "<S-Up>", "<C-u>", { desc = "Scroll half a page up" })
+-- map({ "n", "v" }, "<S-Down>", "<C-d>", { desc = "Scroll half a page down" })
+-- map("i", "<S-Up>", "<C-o><C-u>", { desc = "Scroll half a page up in insert mode" })
+-- map("i", "<S-Down>", "<C-o><C-d>", { desc = "Scroll half a page down in insert mode" })
 
 map("n", "<C-Down>", "<C-e>", { desc = "Scroll window down one line" })
 map("n", "<C-Up>", "<C-y>", { desc = "Scroll window up one line" })
@@ -37,7 +81,7 @@ map("n", "<C-l>", ":vertical resize +2<CR>", { desc = "Increase window width" })
 map("v", "<", "<gv", { desc = "Indent left and reselect" })
 map("v", ">", ">gv", { desc = "Indent right and reselect" })
 
-map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>", { desc = "Save file" })
+map({ "n", "i", "v" }, "<C-s>", "<cmd>write<cr>", { desc = "Save file" })
 map("n", "<Esc>", "<cmd>noh<CR>", { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 map("t", "<C-x>", "<C-\\><C-N>", { desc = "escape terminal mode" })
@@ -53,102 +97,75 @@ map("t", "<C-x>", "<C-\\><C-N>", { desc = "escape terminal mode" })
 -- map("i", "<C-j>", "<Down>", { desc = "move down" })
 -- map("i", "<C-k>", "<Up>", { desc = "move up" })
 
--- PLUGINS
-map({ "n", "x" }, "<leader>pf", function()
-	require("conform").format({ lsp_fallback = true })
-end, { desc = "general format file" })
-map("n", "<leader>pm", "<cmd>MarkdownPreview<cr>", { desc = "Markdown preview" })
-map("n", "<leader>pls", "<cmd>LiveServerStart<CR>", { desc = "Live Preview Start" })
-map("n", "<leader>plx", "<cmd>LiveServerStop<CR>", { desc = "Live Preview Stop" })
-
 -- Comment
 map("n", "<leader>/", "gcc", { desc = "toggle comment", remap = true })
 map("v", "<leader>/", "gc", { desc = "toggle comment", remap = true })
 
--- nvimtree
-map("n", "<C-n>", "<cmd>NvimTreeToggle<CR>", { desc = "nvimtree toggle window" })
-map("n", "<leader>e", "<cmd>NvimTreeFocus<CR>", { desc = "nvimtree focus window" })
-
--- whichkey
-map("n", "<leader>wK", "<cmd>WhichKey <CR>", { desc = "whichkey all keymaps" })
-map("n", "<leader>wk", function()
-	vim.cmd("WhichKey " .. vim.fn.input("WhichKey: "))
-end, { desc = "whichkey query lookup" })
-
--- TELESCOPE
-map("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Telescope: find buffers" })
-map("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Telescope: help page" })
-map("n", "<leader>fm", "<cmd>Telescope marks<CR>", { desc = "Telescope: find marks" })
-map("n", "<leader>fo", "<cmd>Telescope oldfiles<CR>", { desc = "Telescope: find oldfiles" })
-map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Telescope: find files" })
-map("n", "<leader>fc", "<cmd>Telescope commands<CR>", { desc = "Telescope: command palette" })
-map("n", "<leader>fq", "<cmd>Telescope quickfix<CR>", { desc = "Telescope: quickfix list" })
-map("n", "<leader>fl", "<cmd>Telescope loclist<CR>", { desc = "Telescope: location list" })
-map(
-	"n",
-	"<leader>fa",
-	"<cmd>Telescope find_files follow=true no_ignore=true hidden=true<CR>",
-	{ desc = "Telescope: find all files" }
-)
-map("n", "<leader>fH", function()
-	require("telescope.builtin").find_files({
-		prompt_title = "Home Files",
-		cwd = vim.fn.expand("~"),
-		hidden = true,
-		no_ignore = true,
-		follow = true,
-	})
-end, { desc = "Telescope: find files from $HOME" })
-map("n", "<leader>fgc", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "Telescope: find in current buffer" })
-map("n", "<leader>fgl", "<cmd>Telescope live_grep<CR>", { desc = "Telescope: live grep" })
-map("n", "<leader>fgh", function()
-	require("telescope.builtin").live_grep({
-		prompt_title = "Grep in Home",
-		cwd = vim.fn.expand("~"),
-		additional_args = function()
-			return { "--hidden", "--no-ignore" }
-		end,
-	})
-end, { desc = "Telescope: grep in $HOME" })
-map("n", "<leader>gc", "<cmd>Telescope git_commits<CR>", { desc = "Telescope: git commits" })
-map("n", "<leader>gs", "<cmd>Telescope git_status<CR>", { desc = "Telescope: git status" })
-
 -- NVCHAD
 map("n", "<leader>nc", "<cmd>NvCheatsheet<CR>", { desc = "toggle nvcheatsheet" })
 map("n", "<leader>nt", function()
-	require("nvchad.themes").open()
+  require("nvchad.themes").open()
 end, { desc = "telescope nvchad themes" })
 
--- TERMINAL
-map("n", "<leader>tf", "<cmd>Telescope terms<CR>", { desc = "Termianl: telescope hidden term" })
-map({ "n", "t" }, "<leader>tp", function()
-	require("nvchad.term").toggle({ pos = "float", id = "floatTerm" })
-end, { desc = "Terminal: toggle popup term" })
-
-map("n", "<leader>th", function()
-	require("nvchad.term").new({ pos = "sp" })
-end, { desc = "Terminal: new horizontal term" })
-map("n", "<leader>tv", function()
-	require("nvchad.term").new({ pos = "vsp" })
-end, { desc = "Terminal: new vertical term" })
-
--- toggleable
+-- Toggleable terminal
 map({ "n", "t" }, "<A-v>", function()
-	require("nvchad.term").toggle({ pos = "vsp", id = "vtoggleTerm" })
-end, { desc = "terminal toggleable vertical term" })
+  require("nvchad.term").toggle {
+    pos = "vsp",
+    id = "vtoggleTerm",
+    size = 0.3,
+  }
+end, { desc = "Toggle Vertical terminal" })
 
 map({ "n", "t" }, "<A-h>", function()
-	require("nvchad.term").toggle({ pos = "sp", id = "htoggleTerm" })
-end, { desc = "terminal toggleable horizontal term" })
+  require("nvchad.term").toggle {
+    pos = "sp",
+    id = "htoggleTerm",
+    size = 0.5,
+  }
+end, { desc = "Toggle horizontal terminal" })
+
+map({ "n", "t" }, "<A-d>", function()
+  require("nvchad.term").toggle {
+    pos = "float",
+    id = "ftoggleTerm",
+  }
+end, { desc = "Toggle floating terminal" })
 
 -- tabufline
-map("n", "<leader>b", "<cmd>enew<CR>", { desc = "buffer new" })
-map("n", "<tab>", function()
-	require("nvchad.tabufline").next()
-end, { desc = "buffer goto next" })
-map("n", "<S-tab>", function()
-	require("nvchad.tabufline").prev()
-end, { desc = "buffer goto prev" })
+map("n", "<leader>b", "<cmd>enew<CR>", { desc = "Buffer new" })
+
+map("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+map("n", "<leader>to", "<cmd>tabonly<CR>", { desc = "Close all other tabs" })
+map("n", "<leader>tc", "<cmd>tabclose<CR>", { desc = "Close tab" })
+map("n", "<leader>tm", "<cmd>tabnext<CR>", { desc = "Next tab" })
+map("n", "<leader>tM", "<cmd>tabprevious<CR>", { desc = "Previous tab" })
+
+map("n", "<leader><Right>", function()
+  require("nvchad.tabufline").next()
+end, { desc = "Buffer goto next" })
+
+map("n", "<leader><Left>", function()
+  require("nvchad.tabufline").prev()
+end, { desc = "Buffer goto prev" })
+
+-- map("n", "<S-Right>", function()
+--   require("nvchad.tabufline").next()
+-- end, { desc = "Buffer goto next" })
+--
+-- map("n", "<S-Left>", function()
+--   require("nvchad.tabufline").prev()
+-- end, { desc = "Buffer goto prev" })
+
 map("n", "<leader>x", function()
-	require("nvchad.tabufline").close_buffer()
-end, { desc = "buffer close" })
+  require("nvchad.tabufline").close_buffer()
+end, { desc = "Buffer close" })
+
+local function close_all_buffers_but_current()
+  local current_buf = vim.api.nvim_get_current_buf()
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if bufnr ~= current_buf and vim.bo[bufnr].buflisted then
+      vim.api.nvim_buf_delete(bufnr, {})
+    end
+  end
+end
+vim.keymap.set("n", "<leader>X", close_all_buffers_but_current, { desc = "Buffers Close all " })
